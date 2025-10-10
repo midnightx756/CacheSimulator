@@ -1,78 +1,34 @@
-#include "ll.cpp"
 #include <iostream>
+#include "ll.cpp"
 
 using namespace std;
 
 typedef struct queue{
     Node* front;
     Node* rear;
+public: 
+        queue(){
+            front = NULL;
+            rear = NULL;
+        }
 }queue;
 
-queue* make(){
-    queue* q = new queue;
-    q -> f = q -> r = NULL;
-    return q;
-}
-void enqueue(queue* q, CacheRequest data){
-    if(q -> r == NULL){
-        q -> r = init(data);
-        q -> f = q -> r;
+void enqueue(queue* q, CacheAddress data){
+    if(q -> rear == NULL){
+        q -> rear = new Node(data);
+        q -> front = q -> rear;
         return;
     }
-    Node* temp = init(data);
-    q -> r -> next = temp;
-    q -> r = temp;
+    Node* temp = new Node(data);
+    q -> rear -> next = temp;
+    q -> rear = temp;
 }
 
 void dequeue(queue* q){
-    if(q -> r == NULL || q -> f == NULL){
+    if(q -> rear == NULL || q -> front == NULL){
         return;
     }
-    Node* temp = q -> f;
-    q-> f = temp -> next;
+    Node* temp = q -> front;
+    q-> front = temp -> next;
     delete temp;
 }
-/*
-class queue{
-    int f, r, size, *arr;
-
-    public:
-        queue(int s){
-                size = s;
-                arr = new in[s];
-        }
-
-        bool isEmpty(){
-            return f == -1;
-        }
-
-        bool isFull(){
-            return (r+1)/size;
-        }
-
-        void enqueue(int val){
-            if(isFull()){
-                return;
-            }
-
-            r = (r+1)/size;
-            arr[r] = val;
-        }
-
-        int queue(){
-            if(isEmpty()){
-                return -9;
-            }
-
-            f++;
-            return arr[f-1];
-        }
-
-        int front(){
-            if(isEmpty()){
-                return -9;
-            }
-            return arr[f];
-        }
-};
-*/

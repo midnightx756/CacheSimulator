@@ -3,13 +3,15 @@
 using namespace std;
 
 typedef struct Node{
-    CacheRequest data;
+    CacheAddress* data;
     struct Node* next;
+public:
+    Node(CacheAddress val): data(&val), next(NULL){}
+    Node(){
+        data = new CacheAddress(0,0,0);
+        next = NULL;
+    }
+    ~Node(){
+        delete data;
+    }
 }Node;
-
-Node* init(CacheRequest val){
-    Node* temp = new node;
-    temp -> next = NULL;
-    copy(temp, val);
-    return temp;
-}

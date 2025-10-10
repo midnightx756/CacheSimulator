@@ -1,31 +1,25 @@
 #include <iostream>
-
+#include <vector>
+#include <optional>
 using namespace std;
 
-typedef struct node{
-    int data;
-    node* next;
-}node;
+template <typename K, typename V>
 
+class Hashing{
+    struct Entry{
+        K key;
+        V value;
+        bool isOccupied;
+        bool isDeleted;
 
-class HashMap{
+        Entry(): isOccupied(false), isDeleted(false) {}
+    };
+
+    vector<Entry> table;
+    int capacity;
     int size;
-    node** table;
-public:
-    HashMap(int size){
-        this -> size = size;
-        table = new node*[size];
-        for(int i=0; i<size; i++){
-            table[i] = nullptr;
-        }
-    }
 
-    int hashFunction(const string& key){
-        int hash = 0;
-        for(char c : key){
-            hash += c;
-        }
-
-        return hash % size;
+    int hash(const K& key) const{
+        return hash<K>{kay} % capacity;
     }
-}
+};
