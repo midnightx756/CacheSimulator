@@ -8,10 +8,10 @@ typedef struct Node{
 public:
     Node(CacheAddress val): data(&val), next(NULL){}
     Node(){
-        data = new CacheAddress(0,0,0);
-        next = NULL;
+        data = nullptr;
+        next = nullptr;
     }
     ~Node(){
-        delete data;
+        
     }
 }Node;

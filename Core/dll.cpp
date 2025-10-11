@@ -8,17 +8,17 @@ typedef struct node{
     struct node* prev;
 public: 
     node(){
-        data = new  CacheAddress();
-        next = NULL;
-        prev = NULL;
+        data = nullptr;
+        next = nullptr;
+        prev = nullptr;
     }
     node(CacheAddress val){
         data = &val;
-        next = NULL;
-        prev = NULL;
+        next = nullptr;
+        prev = nullptr;
     }
     ~node(){
-        delete data;
+        //delete data;
     }
 }node;
 
@@ -26,8 +26,8 @@ typedef struct dll{
     node* head, *tail;
 public:
     dll(){
-        head = NULL;
-        tail = NULL;
+        head = nullptr;
+        tail = nullptr;
     }
 
     ~dll(){
@@ -38,9 +38,9 @@ public:
 void insertHead(dll* dl, CacheAddress data){
         node* temp = new node(data);
         temp -> next = dl ->  head;
-        temp -> prev = NULL;
+        temp -> prev = nullptr;
         dl -> head = temp;
-        if(dl -> tail == NULL){
+        if(dl -> tail == nullptr){
             dl -> tail = dl -> head;
         }
 }
