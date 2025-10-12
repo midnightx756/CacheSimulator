@@ -22,7 +22,7 @@ class HashMap{
 
         V key_not_found_sentinel = V();
 
-        int hash_function(const K&key){
+        int hash_function(const K&key) const{
             return std::hash<K>{}(key) %table_size;
         }
 

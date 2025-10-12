@@ -65,7 +65,7 @@ void HashMap<K, V>::deleteKey(const K& key) {
 template <typename K, typename V>
 void HashMap<K, V>::display() const {
     std::cout << "\n--- Hash Map Structure (Manual Separate Chaining) ---\n";
-    for (int i = 0; i < TABLE_SIZE; i++) {
+    for (int i = 0; i < table_size; i++) {
         std::cout << "Bucket " << (i < 10 ? " " : "") << i << ": ";
         Mapnode<K, V> *current = hashTable[i];
 
