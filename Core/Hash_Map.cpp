@@ -82,6 +82,28 @@ void HashMap<K, V>::display() const {
     std::cout << "---------------------------------------------------\n";
 }
 
+template <typename K, typename V>
+bool HashMap<K, V>::contains_key(const K& key) const {
+    // 1. Calculate the bucket index
+    int index = hash_function(key);
+    
+    // 2. Start traversal at the head of the chain
+    MapNode<K, V> *current = hashTable[index];
+    
+    // 3. Traverse the entire linked list (the chain)
+    while (current != nullptr) {
+        // Check for a key match
+        if (current->key == key) {
+            // Key found! Exit immediately and return true.
+            return true;
+        }
+        current = current->next;
+    }
+    
+    // 4. Key not found after checking the entire chain
+    return false; 
+}
+
 template class HashMap<long long, int>;
 
 // =======================================================

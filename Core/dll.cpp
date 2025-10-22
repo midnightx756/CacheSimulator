@@ -1,19 +1,18 @@
 #include <iostream>
-#include "cache.cpp"
 using namespace std;
 
+template <typename T>
 typedef struct node{
-    CacheAddress* data;
+    T data;
     struct node* next;
     struct node* prev;
 public: 
     node(){
-        data = nullptr;
         next = nullptr;
         prev = nullptr;
     }
-    node(CacheAddress val){
-        data = &val;
+    node(T val){
+        data = val
         next = nullptr;
         prev = nullptr;
     }
@@ -24,10 +23,13 @@ public:
 
 typedef struct dll{
     node* head, *tail;
+    int size, capacity;
 public:
     dll(){
         head = nullptr;
         tail = nullptr;
+        size = 0;
+        capacity = 20;
     }
 
     ~dll(){
@@ -35,7 +37,7 @@ public:
     }
 }dll;
 
-void insertHead(dll* dl, CacheAddress data){
+void insertHead(dll* dl, Tdata){
         node* temp = new node(data);
         temp -> next = dl ->  head;
         temp -> prev = nullptr;
@@ -45,6 +47,15 @@ void insertHead(dll* dl, CacheAddress data){
         }
 }
 
+void insertAtHeadFromTail(dll* dl){
+    dl -> tail -> next = dl -> head;
+    dl -> head -> prev = dl -> tail;
+    dl -> head = dl -> head -> prev;
+    dl -> tail = dl -> tail -> prev;
+    dl -> head -> prev = nullptr;
+    dl -> tail -> next = nullptr;
+}
+
 void deleteTail(dll* dl){
     if(!dl -> tail){
         return;
@@ -52,4 +63,12 @@ void deleteTail(dll* dl){
     node* temp = dl -> tail;
     dl -> tail = dl -> tail -> prev;
     delete temp;
+}
+
+bool isFull(dll* dl){
+    return dl -> size == dl -> capacity;
+}
+
+int main(){
+//do tests on dll for LRU
 }

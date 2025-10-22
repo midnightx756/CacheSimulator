@@ -3,17 +3,21 @@
 
 using namespace std;
 
+template <typename T>
 typedef struct queue{
-    Node* front;
-    Node* rear;
+    Node <T>* front;
+    Node <T>* rear;
+    int size, cap;
 public: 
         queue(){
             front = NULL;
             rear = NULL;
+            size = 0;
+            cap = 20;
         }
 }queue;
 
-void enqueue(queue* q, CacheAddress data){
+void enqueue(queue* q, T data){
     if(q -> rear == NULL){
         q -> rear = new Node(data);
         q -> front = q -> rear;
@@ -22,6 +26,7 @@ void enqueue(queue* q, CacheAddress data){
     Node* temp = new Node(data);
     q -> rear -> next = temp;
     q -> rear = temp;
+    q -> size++;
 }
 
 void dequeue(queue* q){
@@ -31,4 +36,15 @@ void dequeue(queue* q){
     Node* temp = q -> front;
     q-> front = temp -> next;
     delete temp;
+
+    q -> size++;
+}
+
+int isFull(queue* q){
+    return q -> size == q -> cap;
+}
+
+int main(){
+    queue* q = new queue;
+    delete q;
 }

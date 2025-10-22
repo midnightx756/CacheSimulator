@@ -1,14 +1,15 @@
 #include <iostream>
-#include "cache.cpp"
+//#include "cache.cpp"
 using namespace std;
 
+template <typename T>
 typedef struct Node{
-    CacheAddress* data;
+   T data;
     struct Node* next;
 public:
-    Node(CacheAddress val): data(&val), next(NULL){}
+    Node(T val): data(val), next(nullptr){}
+    Node(T val, struct Node* n): data(val) , next(n) {}
     Node(){
-        data = nullptr;
         next = nullptr;
     }
     ~Node(){

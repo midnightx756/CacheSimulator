@@ -54,6 +54,7 @@ public:
         V get_val(const K& key) const;
         void deleteKey(const K& key);
         void display() const;
+        bool contains_key(const K& key) const;
 };
 
 #endif
