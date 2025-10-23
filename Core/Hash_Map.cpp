@@ -109,7 +109,7 @@ template class HashMap<long long, int>;
 // =======================================================
 // Main testing function
 // =======================================================
-int main() {
+/*int main() {
     // Define the types for this instance
     using KEY_TYPE = long long;
     using VALUE_TYPE = int;
@@ -149,4 +149,4 @@ int main() {
     // The destructor (~HashMap) automatically cleans up remaining memory.
 
     return 0;
-}
+}*/
