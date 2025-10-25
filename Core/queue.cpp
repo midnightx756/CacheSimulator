@@ -1,6 +1,6 @@
 #include <iostream>
-#include "ll.h"
-
+#include "queue.h"
+/*
 using namespace std;
 
 template <typename T>
@@ -10,13 +10,19 @@ struct queue{
     int size, cap;
 public: 
         queue(){
-            front = NULL;
-            rear = NULL;
+            front = nullptr;
+            rear = nullptr;
             size = 0;
             cap = 20;
         }
+        queue(int s){
+            front = nullptr;
+            rear = nullptr;
+            size = 0;
+            cap = s;
+        }
 };
-
+*/
 template <typename T>
 void enqueue(queue<T>* q, T data){
     if(q -> rear == NULL){
