@@ -73,7 +73,7 @@ void print(dll<T>* dl){
     }
     cout << "<------>null\n";
 }
-
+/*
 int main(){
         dll<int>* dl = new dll<int>;
         insertHead(dl, 90);
@@ -90,3 +90,4 @@ int main(){
         print(dl);
         delete dl; 
 }
+*/
