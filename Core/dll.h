@@ -34,6 +34,12 @@ public:
         size = 0;
         capacity = 20;
     }
+    dll(int c){
+        head = nullptr;
+        tail = nullptr;
+        size = 0;
+        capacity = c;
+    }
 
     ~dll(){
             node<T>* itr = head;

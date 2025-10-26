@@ -2,11 +2,14 @@
 #include "cache.h"
 #include "Hash_Map.h"
 #include "dll.h"
-#include "queue.cpp"
+#include "queue.h"
 #include "min_heap.cpp"
 
+using namespce std;
 class Policies{
+    int CacheSize;//Cache Memory size
 
+     queue<CacheAddress>* q;
     dll<CacheAddress>* dl;
     HashMap<CacheAddress, CacheLine>*  h;
 
@@ -16,7 +19,6 @@ class Policies{
     //Hash Map for min heap to calculate usage frequency
     HashMap<ChaceAddress, int> hmh;
 
-    queue<CacheAddress>* q;
 
     struct minheap_type{// For simulating cache create a structure for efficient tracking
         CacheAddress val;
@@ -38,7 +40,12 @@ class Policies{
     };
 
     MinHeap<minheap_type> hp;
+
 public:
+    Policies(int s){
+        q = new queue(CacheSize);
+        dl = new dll(CacheSize);
+    }
     void LRU(CacheAddress ad){
         //Does Least Recently Used
         CacheAddress val;
@@ -53,27 +60,33 @@ public:
             }
         }
         if(isFull(dl)){
-           evict();
+            h -> deleteKey(dl-> tail -> data);
+            dl -> tail -> data = val;
+            insertAtHeadFromTail(dl);
         }
     }
 
-    void LFU(CacheAddress data){
+    void LFU_NonHybrid(CacheAddress data){
             minheap_type d(data);
             d.ind = hp.size();
-            hp.push(d);
-            if(!hmh.contains_key(data))
-                insertKey_Val(data, d.ind);
-            else if(hmh.contains_key(data)){
+
+            if(if d.ind != CacheSize){
+                if(!hmh.contains_key(data)){
+                    insertKey_Val(data, d.ind);
+                    hp.push(d);
+                }
+                else if(hmh.contains_key(data)){
                     hp[hmp.getval(data)].frequency++;
+                    hp.update_node_position(hmp.getval(data));
+                }
+            }
+            else{
+                d = hp.top();
+                pop();
+                hmh.deleteKey(d);
             }
     }
 
-    void evict(){
-        //Used to delete the the memory block from both LFU and LRU Hybrid;
-        h -> deleteKey(dl-> tail -> data);
-        dl -> tail -> data = val;
-        insertAtHeadFromTail(dl);
-    }
 
     void FIFO(){
         CacheAddress *ad;
