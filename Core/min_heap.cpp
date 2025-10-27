@@ -70,7 +70,7 @@ public:
             heapifydown(0);
         }
 
-        bool empty(){
+        bool empty()const{
             return heap.empty();
         }
 
@@ -83,7 +83,11 @@ public:
             heapifydown(index);
         }
 
-        const T& operator[](int index){
+        T& operator[](int index){
+            return heap[index];
+        }
+
+        const T& operator[](int index)const{
             return heap[index];
         }
 };

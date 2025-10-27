@@ -12,17 +12,27 @@ struct queue{
     Node <T>* rear;
     int size, cap;
 public:
+    queue(int &s){
+        front = nullptr;
+        rear = nullptr;
+        size = 0;
+        cap = s;
+    }
     queue(){
         front = nullptr;
         rear = nullptr;
         size = 0;
         cap = 20;
     }
-    queue(int s){
+    ~queue(){
+        Node<T>* itr = front, *tm;
+        while(itr){
+            tm = itr;
+            itr = itr -> next;
+            delete tm;
+        }
         front = nullptr;
         rear = nullptr;
-        size = 0;
-        cap = s;
     }
 };
 
@@ -39,5 +49,5 @@ template <typename T>
 int Empty(queue<T>* q);
 
 template <typename T>
-T Front(queue<T>* q);
+T  Front(queue<T>* q);
 #endif
