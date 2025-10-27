@@ -26,23 +26,37 @@ class Policies{
         CacheAddress val;
         int frequency;// for keeping track of usage
         int ind;// for keeping track of index;
+        unsigned int time;// To calculate time for LFU
     public:
         minheap_type(){
             frequency = 1;
             ind = 0;
+            time = 0;
         }
         minheap_type(CacheAddress data){
             val = data;
             frequency = 1;
             ind = 0;
+            time = 0;
+        }
+          minheap_type(CacheAddress data, unsigned int t){
+            val = data;
+            frequency = 1;
+            ind = 0;
+            time = t;
         }
         // Custom operator overload for the Min Heap to correctly compare priorities
         bool operator<(minheap_type& other){
-            return frequency > other.frequency; // Min Heap: Lower frequency means HIGHER priority
+            if(frequency != other.frequency){
+            return frequency > other.frequency;
+            } // Min Heap: Lower frequency means HIGHER priority
+
+            return time > other.time;
         }
     };
 
     MinHeap<minheap_type> hp;
+    unsigned int counter = 0;
 
 public:
     Policies(int s){
@@ -52,59 +66,76 @@ public:
         l1= nullptr;
     }
 
-    void LRU(CacheAddress ad, CacheLine l){
+    int LRU(CacheAddress ad, CacheLine l){
         //Does Least Recently Used
-        CacheAddress val;
-        CacheLine ll;
-        if(!isFull(dl)){
-            if(!h ->contains_key(val)){
-                insertHead(dl, val);
+        node<CacheAddress>* chn;
+       if(hdll.contains_key(ad)){
+            chn = hdll.get_val(ad);
+            if(dl -> head == dl -> tail)
+                return 1;
+            if(!chn -> next)
+                insertAtHeadFromTail(dl);
+            else if(chn -> next && chn -> prev){
+                chn -> next -> prev = chn -> prev;
+                chn -> prev -> next = chn -> next;
+                chn -> next = dl -> head;
+                chn -> prev = nullptr;
+                dl -> head -> prev = chn;
+                dl -> head = chn;
             }
-            else{
-                insertHead(dl, val);
-                h -> insertKey_Val(val, l);
-            }
-        }
-        if(isFull(dl)){
-            h -> deleteKey(dl-> tail -> data);
-            dl -> tail -> data = val;
-            insertAtHeadFromTail(dl);
-        }
+            return 1;
+       }
+
+       if(isFull(dl)){
+            hdll.deleteKey(dl -> tail -> data);
+            deleteTail(dl);
+       }
+
+       insertHead(dl, ad);
+       hdll.insertKey_Val(ad, dl -> head);
+       return 0;
     }
 
-    void LFU_NonHybrid(CacheAddress data, CacheLine l){
-            minheap_type d(data);
-            d.ind = hp.size();
+    int LFU_NonHybrid(CacheAddress data, CacheLine l){
+           
 
             if(hmh.contains_key(data)){
-                hp[hmh.get_val(data)].frequency++;
-                hp.update_node_position(hmh.get_val(data));
+                int i = hmh.get_val(data);
+                hp[i].frequency++;
+                hp.update_node_position(i);
+                return 1;
             }
-            else if(d.ind != CacheSize && !hmh.contains_key(data)){
-                hmh.insertKey_Val(data, hmh.get_val(data));
-                hp.push(d);
-            }
-            else{
-                d = hp.top();
+
+            minheap_type d(data);
+            d.ind = hp.size();
+            d.time = ++counter;
+
+            if(d.ind == CacheSize){
+                minheap_type nb = hp.top();
                 hp.pop();
-                hmh.deleteKey(d.val);
+                hmh.deleteKey(nb.val);
             }
+
+            hp.push(d);
+            
     }
 
 
-    void FIFO(CacheAddress ad, CacheLine l){
+    int FIFO(CacheAddress ad, CacheLine l){
         if(!in(l1, ad) && !isFull(q)){
             enqueue(q,ad);
             insertHeadll(l1, ad);
+            return 0;
         }
         else if(isFull(q) && !in(l1, ad)){
             deleteNode(l1, Front(q));
             dequeue(q);
             enqueue(q, ad);
             insertHeadll(l1, ad);
+            return 0;
         }
         else{
-            //hit rate
+            return 1;
         }
     }
 };
