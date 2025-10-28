@@ -104,11 +104,9 @@ bool HashMap<K, V>::contains_key(const K& key) const {
     return false; 
 }
 
-template class HashMap<long long, int>;
+//template class HashMap<long long, int>;
 
-// =======================================================
-// Main testing function
-// =======================================================
+
 /*int main() {
     // Define the types for this instance
     using KEY_TYPE = long long;
