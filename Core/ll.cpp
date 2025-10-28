@@ -7,7 +7,7 @@ template <typename T>
 bool in(ll<T>* l, T val){
     int val1, val2;
     val2 = hash_function(val);
-    while(head){
+    while(l -> head){
            val1 = hash_function(l -> head -> data);
             if(val1 == val2)
                 return true;
@@ -22,7 +22,7 @@ void deleteNode(ll<T>*l, T  val){
     if(!( l -> head))
         return;
 
-    Node* tm = l -> head;
+    Node<T>* tm = l -> head;
     if(hash_function(l -> head -> data) == val){
         l -> head = l-> head -> next;
         delete tm;
@@ -40,12 +40,12 @@ void deleteNode(ll<T>*l, T  val){
     if(!itr -> next)
         return;
     tm = itr -> next;
-    itr -> next = tem -> next;
+    itr -> next = tm -> next;
     delete tm;
 }
 
 template <typename T>
 void insertHeadll(ll<T>*l, T val){
-    Node<T>* tm = new node<T>(val, l -> head);
+    Node<T>* tm = new Node<T>(val, l -> head);
     l -> head = tm; 
 }

@@ -67,7 +67,6 @@ public:
     }
 
     int LRU(CacheAddress ad, CacheLine l){
-        //Does Least Recently Used
         node<CacheAddress>* chn;
        if(hdll.contains_key(ad)){
             chn = hdll.get_val(ad);
@@ -102,7 +101,9 @@ public:
             if(hmh.contains_key(data)){
                 int i = hmh.get_val(data);
                 hp[i].frequency++;
-                hp.update_node_position(i);
+                int in = hp.update_node_position(i);
+                hmh.deleteKey(data);
+                hmh.insertKey_Val(data, in);
                 return 1;
             }
 
@@ -116,7 +117,8 @@ public:
                 hmh.deleteKey(nb.val);
             }
 
-            hp.push(d);
+            int i = hp.push(d);
+            hmh.insertKey_Val(data, i); 
             
     }
 

@@ -19,35 +19,41 @@ class MinHeap{
             return 2*i + 2;
         }
 
-        void heapifyup(int i){
+        int  heapifyup(int i){
             while(i > 0 && heap[parent(i)] > heap[i]){
                 swap(heap[parent(i)], heap[i]);
                 i = parent(i);
             }
+            return i;
         }
 
-        void heapifydown(int i){
+    int heapifydown(int i) {
+        int s = i; 
+        while (true) {
             int l = left(i);
             int r = right(i);
-            int s = i;
-
-            if(l < heap.size() && heap[l] < heap[s]){
+            s = i;
+            if (l < heap.size() && heap[l].frequency < heap[s].frequency) {
                 s = l;
             }
 
-            if(r < heap.size() && heap[r] < heap[s]){
+            if (r < heap.size() && heap[r].frequency < heap[s].frequency) {
                 s = r;
             }
 
-            if(s != i){
+            if (s != i) {
                 swap(heap[i], heap[s]);
-                heapifydown(s);
+                i = s;
+            } else {
+                break;
             }
         }
+        return i;
+    }
 public:
-        void push(const T& value){
+        int push(const T& value){
             heap.push_back(value);
-            heapifyup(heap.size() - 1);
+            return heapifyup(heap.size() - 1);
         }
 
         const T& top() const{
@@ -78,9 +84,9 @@ public:
             return heap.size();
         }
 
-        void update_node_position(int index) {
-            heapifyup(index);
-            heapifydown(index);
+        int update_node_position(int index) {
+            int r = heapifyup(index);
+            return heapifydown(index);
         }
 
         T& operator[](int index){
