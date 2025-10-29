@@ -88,7 +88,7 @@ bool HashMap<K, V>::contains_key(const K& key) const {
     int index = hash_function(key);
     
     // 2. Start traversal at the head of the chain
-    MapNode<K, V> *current = hashTable[index];
+    Mapnode<K, V> *current = hashTable[index];
     
     // 3. Traverse the entire linked list (the chain)
     while (current != nullptr) {
@@ -104,10 +104,12 @@ bool HashMap<K, V>::contains_key(const K& key) const {
     return false; 
 }
 
-//template class HashMap<long long, int>;
+template class HashMap<long long, int>;
 
-
-/*int main() {
+// =======================================================
+// Main testing function
+// =======================================================
+int main() {
     // Define the types for this instance
     using KEY_TYPE = long long;
     using VALUE_TYPE = int;
@@ -147,4 +149,4 @@ bool HashMap<K, V>::contains_key(const K& key) const {
     // The destructor (~HashMap) automatically cleans up remaining memory.
 
     return 0;
-}*/
+}

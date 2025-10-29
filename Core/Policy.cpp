@@ -46,7 +46,7 @@ class Policies{
             time = t;
         }
         // Custom operator overload for the Min Heap to correctly compare priorities
-        bool operator<(minheap_type& other){
+        bool operator>(minheap_type& other){
             if(frequency != other.frequency){
             return frequency > other.frequency;
             } // Min Heap: Lower frequency means HIGHER priority
@@ -56,7 +56,7 @@ class Policies{
     };
 
     MinHeap<minheap_type> hp;
-    static unsigned int counter = 0;
+    unsigned int counter = 0;
 
 public:
     Policies(int s){

@@ -38,7 +38,7 @@ public:
         return std::chrono::duration<double>(duration).count();
     }
 };
-/*
+
 int main() {
     Stopwatch timer;
 
@@ -59,4 +59,3 @@ int main() {
 
     return 0;
 }
-    */
