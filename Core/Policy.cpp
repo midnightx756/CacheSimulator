@@ -66,6 +66,13 @@ public:
         l1= nullptr;
     }
 
+    ~Policies(){
+        delete q;
+        delete dl;
+        if(l1)
+            delete l1;
+    }
+
     int LRU(CacheAddress ad, CacheLine l){
         node<CacheAddress>* chn;
        if(hdll.contains_key(ad)){
@@ -119,7 +126,7 @@ public:
 
             int i = hp.push(d);
             hmh.insertKey_Val(data, i); 
-            
+            return 0;
     }
 
 

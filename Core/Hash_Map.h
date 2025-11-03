@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-const int table_size = 10;
+const int table_size = 20;
 
 template <typename K, typename V>
 

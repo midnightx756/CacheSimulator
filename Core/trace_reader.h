@@ -7,7 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
-
+#include <cstdint>
 // Structure to represent a memory access from trace file
 struct MemoryTrace {
     char operation;          // 'R' for read, 'W' for write, 'I' for instruction
