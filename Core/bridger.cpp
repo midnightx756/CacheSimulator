@@ -220,59 +220,57 @@ int main(int argc, char* argv[]) {
                                 TraceWriter writer(output_filename); // File is opened here, throws on error.
 
                                 if (!writer.isOpen()) {
-                                    // This line should technically be unreachable if the constructor throws,
-                                    // but it's a good safety check.
                                     std::cerr << "Error: TraceWriter file is not open after construction." << std::endl;
                                     return 1;
                                 }
 
                                 std::cout << "\nTraceWriter opened file: " << output_filename << std::endl;
-                                std::cout << "Enter a single trace entry (e.g., R 0x1234ABCD or W 0xFFFFFFFF):" << std::endl;
+                                std::cout << "Enter trace entries one per line (e.g., R 0x1234ABCD). Press Ctrl+D (or Ctrl+Z on Windows) to finish input." << std::endl;
 
-                                // Get user input for a single trace entry
                                 char operation;
                                 std::string address_str;
                                 uint32_t address;
+                                size_t entries_written = 0;
 
-                                if (!(std::cin >> operation >> address_str)) {
-                                    std::cerr << "Failed to read operation and address." << std::endl;
-                                    return 1;
+                                // Loop to read multiple operation/address pairs until end-of-file (EOF) is reached
+                                while (std::cin >> operation >> address_str) {
+                                    // 1. Convert operation to uppercase and validate
+                                    operation = static_cast<char>(std::toupper(operation));
+                                    if (operation != 'R' && operation != 'W' && operation != 'I') {
+                                        std::cerr << "Warning: Skipping invalid operation '" << operation << "'. Must be R, W, or I. (Line ignored)" << std::endl;
+                                        continue;
+                                    }
+
+                                    // 2. Convert address string (potentially hex/0x format) to uint32_t
+                                    std::stringstream ss;
+                                    // Use the stringstream to parse the address, supporting '0x' prefix
+                                    ss << std::hex << address_str;
+                                    ss >> address;
+
+                                    if (ss.fail()) {
+                                        std::cerr << "Warning: Skipping entry due to invalid address format: " << address_str << ". (Line ignored)" << std::endl;
+                                        continue;
+                                    }
+
+                                    // 3. Write the entry
+                                    switch (operation) {
+                                        case 'R':
+                                            writer.writeRead(address);
+                                            break;
+                                        case 'W':
+                                            writer.writeWrite(address);
+                                            break;
+                                        case 'I':
+                                            writer.writeInstruction(address);
+                                            break;
+                                        default:
+                                            // Unreachable due to prior check
+                                            break;
+                                    }
+                                    entries_written++;
                                 }
 
-                                // Simple validation for operation
-                                operation = std::toupper(operation);
-                                if (operation != 'R' && operation != 'W' && operation != 'I') {
-                                    std::cerr << "Error: Invalid operation '" << operation << "'. Must be R, W, or I." << std::endl;
-                                    return 1;
-                                }
-
-                                // Convert address string (potentially hex/0x format) to uint32_t
-                                std::stringstream ss;
-                                ss << std::hex << address_str;
-                                ss >> address;
-
-                                if (ss.fail()) {
-                                    std::cerr << "Error: Invalid address format: " << address_str << std::endl;
-                                    return 1;
-                                }
-
-                                // Write the entry using the appropriate method
-                                switch (operation) {
-                                    case 'R':
-                                        writer.writeRead(address);
-                                        break;
-                                    case 'W':
-                                        writer.writeWrite(address);
-                                        break;
-                                    case 'I':
-                                        writer.writeInstruction(address);
-                                        break;
-                                    default:
-                                        // Should not happen due to prior validation
-                                        break;
-                                }
-
-                                std::cout << "Successfully wrote entry: " << operation << " 0x" << std::hex << std::uppercase << std::setw(8) << std::setfill('0') << address << std::endl;
+                                std::cout << "\nSuccessfully wrote " << entries_written << " entries to " << output_filename << "." << std::endl;
 
                             } catch (const std::runtime_error& e) {
                                 std::cerr << "Trace Writer Error: " << e.what() << std::endl;
