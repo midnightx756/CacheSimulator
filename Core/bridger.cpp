@@ -14,13 +14,36 @@
 using namespace std;
 
 const uint32_t CACHE_SIZE_BYTES = 64 * 1024;
-const uint32_t CACHE_BLOCK_SIZE = 64;
-const uint32_t ASSOCIATIVITY = 8;
+uint32_t CACHE_BLOCK_SIZE = 64;
+uint32_t ASSOCIATIVITY = 8;
 
-const uint32_t NUM_SETS = CACHE_SIZE_BYTES / (CACHE_BLOCK_SIZE * ASSOCIATIVITY);
+uint32_t NUM_SETS = CACHE_SIZE_BYTES / (CACHE_BLOCK_SIZE * ASSOCIATIVITY);
 
-const uint32_t BLOCK_SIZELOG2 = calculateLog2(CACHE_BLOCK_SIZE);
-const uint32_t NUM_SETSLOG2 = calculateLog2(NUM_SETS);
+uint32_t BLOCK_SIZELOG2 = calculateLog2(CACHE_BLOCK_SIZE);
+uint32_t NUM_SETSLOG2 = calculateLog2(NUM_SETS);
+
+void modifyAssociativity_blockSize(uint32_t associativity, uint32_t block_size){
+    std::cout << "Cache size is 64 Kb, as it is levle 1 cache, proceed: ";
+    if(block_size == 0 || (block_size & (block_size - 1)) != 0)
+        throw std::invalid_argument("Error: Block Size must be a power of two and greater than 0.");
+    if(associativity == 0 || (associativity & (associativity -1 )) != 0)
+         throw std::invalid_argument("Error: Associativity must be a power of two and greater than 0.");
+    if(CACHE_SIZE_BYTES % (block_size * associativity) != 0)
+        throw std::invalid_argument("Error: Invalid Configuration. (Block Size * Associativity) must divide the total cache size");
+    ASSOCIATIVITY = associativity;
+    CACHE_BLOCK_SIZE = block_size;
+
+    NUM_SETS = CACHE_SIZE_BYTES / (CACHE_BLOCK_SIZE * ASSOCIATIVITY);
+
+    BLOCK_SIZELOG2 = calculateLog2(CACHE_BLOCK_SIZE);
+    NUM_SETSLOG2 = calculateLog2(NUM_SETS);
+
+    if(NUM_SETS == 0){
+        throw std::invalid_argument("Error: 0 Number of sets, either Cache Block Size or Associativity too large");
+    }
+}
+
+
 enum PolicyType {LFU_POLICY, LRU_POLICY, FIFO_POLICY, UNKNOWN_POLICY};
 
 int policy_access_wrapper(Policies* policy, vector<CacheLine>& current_set, const CacheAddress& c_addr, char operation, PolicyType chosen_policy) {
@@ -162,35 +185,57 @@ public:
 
                           // ----------------------------------------------------------------------
 
-                          PolicyType get_policy_type(const std::string& policy_str) {
-                              std::string s = policy_str;
-                              std::transform(s.begin(), s.end(), s.begin(), ::toupper);
-                              if (s == "LRU") return LRU_POLICY;
-                              if (s == "LFU") return LFU_POLICY;
-                              if (s == "FIFO") return FIFO_POLICY;
-                              return UNKNOWN_POLICY;
-                          }
+PolicyType get_policy_type(const std::string& policy_str) {
+    std::string s = policy_str;
+    std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+    if (s == "LRU") return LRU_POLICY;
+    if (s == "LFU") return LFU_POLICY;
+    if (s == "FIFO") return FIFO_POLICY;
+    return UNKNOWN_POLICY;
+}
 
-                          std::string get_policy_name(PolicyType type) {
-                              switch(type) {
-                                  case LRU_POLICY: return "LRU";
-                                  case LFU_POLICY: return "LFU";
-                                  case FIFO_POLICY: return "FIFO";
-                                  default: return "UNKNOWN";
-                              }
-                          }
+std::string get_policy_name(PolicyType type) {
+    switch(type) {
+            case LRU_POLICY: return "LRU";
+            case LFU_POLICY: return "LFU";
+            case FIFO_POLICY: return "FIFO";
+            default: return "UNKNOWN";
+    }
+}
 
 int main(int argc, char* argv[]) {
     // 1. Handle command-line arguments for policy selection
-    if (argc < 4) { // **MODIFIED**: Now requires 3 arguments + program name = 4
-        std::cerr << "Usage: " << argv[0] << " <input_trace_file> <policy_name (LRU|LFU|FIFO)> <output_trace_file>" << std::endl;
-        std::cerr << "Example: " << argv[0] << " input.txt LRU output.txt" << std::endl;
+     if (argc != 6) {
+        std::cerr << "Usage for Trace Writing (Interactive): " << argv[0] << " <trace_file_name>" << std::endl;
+        std::cerr << "Usage for Simulation (Configured): " << argv[0] << " <trace_file> <policy> <associativity> <block_size> <seconds>" << std::endl;
+        //std::cerr << "Example Interactive: " << argv[0] << " custom_trace.txt" << std::endl;
+        std::cerr << "Example Simulation: " << argv[0] << " custom_trace.txt LRU 8 64 10" << std::endl;
         return 1;
     }
 
-    std::string trace_filename = argv[1];
+    try{
+        if(*argv[5] == '0')
+            throw std:: invalid_argument("Seconds must be greater than 0");
+    }catch(const std::invalid_argument& e){
+        return 1;
+    }
+    double simulation_period = std:: stod(argv[5]);
+    //std::string trace_filename = argv[1];
     std::string policy_str = argv[2];
-    std::string output_filename = argv[3]; // **ADDED**
+    std::string output_filename = argv[1]; // **ADDED**
+    uint32_t associativity_val = 0;
+    uint32_t blockSize_val = 0;
+
+    // Parse and Validate configuration arguments
+    try {
+        associativity_val = static_cast<uint32_t>(std::stoul(argv[3]));
+        blockSize_val = static_cast<uint32_t>(std::stoul(argv[4]));
+        modifyAssociativity_blockSize(associativity_val, blockSize_val);
+    } catch (const std::exception& e) {
+        std::cerr << "Error: Invalid number format for associativity or block size. They must be integers." << std::endl;
+        return 1;
+    }
+
     PolicyType policy_type = get_policy_type(policy_str);
 
                             if (policy_type == UNKNOWN_POLICY) {
@@ -285,15 +330,16 @@ int main(int argc, char* argv[]) {
                             // Now, run the simulation
                             try {
                                 CacheSimulator simulator(policy_type);
-                                TraceReader reader(trace_filename);
+                                TraceReader reader(output_filename);
                                 MemoryTrace trace;
+                                Stopwatch watch;
 
-                                std::cout << "\nStarting trace processing with " << get_policy_name(policy_type) << " policy..." << std::endl;
-
-                                while (reader.readNext(trace)) {
+                                std::cout << "\nStarting trace processing with " << get_policy_name(policy_type) << " policy... for " << simulation_period << "seconds" << std::endl;
+                                watch.start();
+                                while (reader.readNext(trace) && watch.get_elapsed_seconds() <= simulation_period) {
                                     simulator.process_trace_access(trace);
                                 }
-
+                                watch.stop();
                                 simulator.print_stats(get_policy_name(policy_type));
 
                             } catch (const std::exception& e) {
