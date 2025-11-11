@@ -40,6 +40,7 @@ void enqueue(queue<T>* q, T data){
     if(q -> rear == NULL){
         q -> rear = new Node<T>(data);
         q -> front = q -> rear;
+        q -> size++;
         return;
     }
     Node<T>* temp = new Node<T>(data);
@@ -58,6 +59,9 @@ void dequeue(queue<T>* q){
     delete temp;
 
     q -> size--;
+    if(q -> front == nullptr){
+        q -> rear = nullptr;
+    }
 }
 
 template <typename T>

@@ -8,10 +8,10 @@
 template <typename T>
 struct Node{
    T data;
-    struct Node* next;
+    Node<T>* next;
 public:
     Node(T val): data(val), next(nullptr){}
-    Node(T val, struct Node* n): data(val) , next(n) {}
+    Node(T val, Node<T>* n): data(val) , next(n) {}
     Node(){
         next = nullptr;
     }
@@ -37,10 +37,12 @@ public:
 
 template <typename T>
 bool in(ll<T>* l, T val){
-    while(l -> head){
-        if(val == l -> head -> data)
+    Node<T>* t = l -> head;
+    //std::cout << "Inside in\n";
+    while(t){
+        if(val == t -> data)
             return true;
-        l -> head = l-> head ->next;
+        t = t->next;
     }
     return false;
 }

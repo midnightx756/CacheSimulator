@@ -62,14 +62,13 @@ public:
         CacheSize = s;
         q = new queue<CacheAddress>(s);
         dl = new dll<CacheAddress>(s);
-        l1= nullptr;
+        l1= new ll<CacheAddress>();
     }
 
     ~Policies(){
         delete q;
         delete dl;
-        if(l1)
-            delete l1;
+        delete l1;
     }
 
     int LRU(CacheAddress ad, CacheLine l){
@@ -131,6 +130,7 @@ public:
 
     int FIFO(CacheAddress ad, CacheLine l){
         if(!in(l1, ad) && !isFull(q)){
+            //cout << "Miss due to entry unavalibility\n";
             enqueue(q,ad);
             insertHeadll(l1, ad);
             return 0;
@@ -140,9 +140,11 @@ public:
             dequeue(q);
             enqueue(q, ad);
             insertHeadll(l1, ad);
+            //cout << "Miss due to queue full\n";
             return 0;
         }
         else{
+            //cout << "Hit";
             return 1;
         }
     }
