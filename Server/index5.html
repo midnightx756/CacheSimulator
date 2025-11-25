@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cache Memory System Simulator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #1f1f1f;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+    }.app-container {
+  display: flex;
+  flex-direction: row;
+  width: 95%;
+  height: 90vh;
+  background: #2b2b2b;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+
+/* LEFT PANEL (Access Mode + Cache Address) */
+.left-panel {
+  flex: 1;
+  padding: 25px;
+  background: linear-gradient(135deg, #3b3b98, #182C61);
+}
+
+h1 {
+  margin-top: 0;
+  text-align: center;
+  font-size: 26px;
+}
+
+.section-title {
+  font-size: 18px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.mode-buttons button {
+  padding: 12px 20px;
+  border: none;
+  margin-right: 10px;
+  background: #82589F;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.2s;
+  color: white;
+}
+
+.mode-buttons button.active,
+.mode-buttons button:hover {
+  background: #D980FA;
+}
+
+.input-box {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+#addTraceBtn {
+  margin-top: 12px;
+  padding: 12px 20px;
+  background: #FC427B;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#addTraceBtn:hover {
+  background: #FD7272;
+}
+
+/* RIGHT PANEL (Trace File + Configuration) */
+.right-panel {
+  flex: 1;
+  padding: 25px;
+  background: linear-gradient(135deg, #2C3A47, #0a3d62);
+}
+
+#traceBox {
+  margin-top: 15px;
+  background: rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 10px;
+  min-height: 150px;
+  color: #f1f2f6;
+  font-size: 15px;
+}
+
+.config-box input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+#startBtn {
+  width: 100%;
+  padding: 15px;
+  background: #1dd1a1;
+  color: black;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+#startBtn:hover {
+  background: #10ac84;
+}
+
+  </style>
+</head>
+<body>
+  <div class="app-container"><!-- LEFT SIDE -->
+<div class="left-panel">
+  <h1>Cache Memory System Simulator</h1>
+
+  <div class="section-title">Access Mode</div>
+  <div class="mode-buttons">
+    <button onclick="selectMode('R')">R (Read)</button>
+    <button onclick="selectMode('W')">W (Write)</button>
+    <button onclick="selectMode('I')">I (Instruction)</button>
+  </div>
+
+  <div class="section-title">Selected Mode & Cache Address:</div>
+  <div id="selectedMode">No mode selected yet.</div>
+
+  <div class="section-title">Cache Address (Hex e.g., 0x1A2B)</div>
+  <input id="cacheInput" type="text" class="input-box" placeholder="Enter cache address" />
+  <button id="addTraceBtn" onclick="addTrace()">Add Trace</button>
+
+  <div class="section-title">Simulation Time (seconds)</div>
+  <input id="simTime" type="number" class="input-box" placeholder="Enter time in seconds" />
+
+  <button id="clockBtn" onclick="startClock()" style="margin-top:10px; padding:10px 20px; background:#fbc531; border:none; border-radius:10px; cursor:pointer; font-size:16px;">Start Clock</button>
+
+  <div id="timeDisplay" style="margin-top:15px; font-size:18px; font-weight:bold; color:#f5f6fa;">Clock not started</div>
+</div>
+
+<!-- RIGHT SIDE -->
+<div class="right-panel">
+<div class="section-title" style="margin-top:0;">Replacement Policy</div>
+<select id="policySelect" class="input-box" style="margin-bottom: 20px;">
+  <option value="LRU">LRU (Least Recently Used)</option>
+  <option value="LFU">LFU (Least Frequently Used)</option>
+  <option value="FIFO">FIFO (First-In, First-Out)</option>
+</select>
+  <div class="section-title">Trace File</div>
+  <div id="traceBox">Trace file data will be displayed here...</div>
+
+  <div class="section-title">Cache Configuration</div>
+  <div class="config-box">
+    <input type="number" id="blockSize" placeholder="Block Size (bytes)" />
+    <input type="number" id="associativity" placeholder="Associativity" />
+  </div>
+
+
+  <button id="startBtn">Start Simulation</button>
+</div>
+
+  </div>  <script>
+    let selectedMode = null;
+    let traces = [];
+
+    function selectMode(mode) {
+      selectedMode = mode;
+      document.getElementById('selectedMode').innerText = "Selected Mode: " + mode;
+
+      document.querySelectorAll('.mode-buttons button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function addTrace() {
+      const input = document.getElementById('cacheInput').value;
+      if (!selectedMode) {
+        alert('Please select a mode first.');
+        return;
+      }
+      if (input.trim() === "") {
+        alert('Enter a valid cache address.');
+        return;
+      }
+      // Basic check for hex address format
+      if (!/^(0x)?[0-9a-fA-F]+$/.test(input.trim())) {
+        alert('Enter a valid hexadecimal cache address (e.g., 0x1A2B).');
+        return;
+      }
+
+      traces.push(selectedMode + " " + input);
+      document.getElementById('traceBox').innerText = traces.join("\n");
+      document.getElementById('cacheInput').value = "";
+    }
+
+    // The startClock function is not strictly needed for simulation logic,
+    // so it is omitted here to keep the code clean.
+
+    document.getElementById('startBtn').onclick = startSimulation;
+
+    function startSimulation() {
+        // Collect configuration inputs using the CORRECT IDs from the HTML structure
+        const policy = document.getElementById('policySelect').value;
+        const blockSize = document.getElementById('blockSize').value;      // FIX: Changed from 'blockSizeInput' to 'blockSize'
+        const associativity = document.getElementById('associativity').value; // FIX: Changed from 'associativityInput' to 'associativity'
+        const seconds = document.getElementById('simTime').value;
+        const input_text = traces.join("\n");
+
+        if (!input_text || !blockSize || !associativity || !seconds) {
+            alert('Please ensure all fields are entered and traces are added.');
+            return;
+        }
+
+        const payload = {
+            policy: policy,
+            block_size: blockSize,
+            associativity: associativity,
+            seconds: seconds,
+            input_text: input_text
+        };
+
+        // UI Feedback: Show loading state by manipulating the start button
+        const startBtn = document.getElementById('startBtn');
+        startBtn.innerText = 'Running Simulation...';
+        startBtn.disabled = true;
+
+        // Use the current page origin to construct the run endpoint (works when page is served
+        // from the Flask server or any other host). This avoids file:// origin problems.
+        fetch(window.location.origin + '/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Restore button state
+            startBtn.innerText = 'Start Simulation';
+            startBtn.disabled = false;
+
+            if (data.error) {
+                alert('Simulation Failed: ' + data.error);
+                return;
+            }
+
+            // SUCCESS: Store result and redirect
+            localStorage.setItem('simulationResult', data.result);
+            window.location.href = 'index6.html';
+        })
+        .catch((error) => {
+            // Restore button state
+            startBtn.innerText = 'Start Simulation';
+            startBtn.disabled = false;
+            alert('Communication Error: Could not connect to Flask server.');
+        });
+    }
+
+  </script></body>
+</html>

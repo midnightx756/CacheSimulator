@@ -1,0 +1,290 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cache Memory System Simulator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #1f1f1f;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .page {
+        display: none;
+        padding: 30px;
+        flex-grow: 1;
+        overflow-y: auto; /* Allow scrolling for large content */
+    }
+    .active {
+      display: flex;
+      flex-direction: column;
+    }
+    .heading {
+      font-size: 28px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      text-align: center;
+      color: #70a1ff;
+    }
+    .sub-heading {
+        font-size: 20px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+        font-weight: bold;
+        border-bottom: 2px solid #57606f;
+        padding-bottom: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    table th, table td {
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background: rgba(255,255,255,0.15);
+      text-transform: uppercase;
+      font-size: 14px;
+      color: #a4b0be;
+    }
+    tr:nth-child(even) {
+      background: rgba(255,255,255,0.03);
+    }
+    tr:hover {
+        background: rgba(112, 161, 255, 0.1);
+    }
+
+    .button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    .button-primary {
+      background-color: #70a1ff;
+      color: #1f1f1f;
+    }
+    .button-primary:hover {
+      background-color: #57606f;
+      color: white;
+    }
+    .button-secondary {
+      background-color: #FC427B;
+      color: white;
+    }
+    .button-secondary:hover {
+      background-color: #d82d61;
+    }
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+    }
+    #summaryOutput {
+      white-space: pre-wrap;
+      font-family: monospace;
+      background: #333;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+    .result-alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        text-align: center;
+    }
+    .result-success {
+        background-color: #1dd1a1;
+        color: #1f1f1f;
+    }
+    .result-error {
+        background-color: #FC427B;
+        color: white;
+    }
+  </style>
+</head>
+<body onload="loadSimulationResult()">
+  <div class="main-content">
+
+    <!-- Page 1: Detailed Trace Log -->
+    <div id="page1" class="page active">
+      <div class="heading">Detailed Trace Log</div>
+
+      <div class="button-container">
+        <button class="button button-primary" onclick="goToSummary()">Show Summary</button>
+        <button class="button button-secondary" onclick="resetSimulation()">Run New Simulation</button>
+      </div>
+
+      <div id="traceMessage" class="result-alert" style="display:none;"></div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Time (Access #)</th>
+              <th>Access Type & Address</th>
+              <th>Result</th>
+              <th>Set Index</th>
+            </tr>
+          </thead>
+          <tbody id="traceTable">
+            <!-- Data rows will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Page 2: Summary Statistics -->
+    <div id="page2" class="page">
+      <div class="heading">Simulation Summary</div>
+
+      <div class="button-container">
+        <button class="button button-primary" onclick="goToPage1()">Show Detailed Log</button>
+        <button class="button button-secondary" onclick="resetSimulation()">Run New Simulation</button>
+      </div>
+
+      <div id="summaryMessage" class="result-alert" style="display:none;"></div>
+
+      <div class="sub-heading">Simulation Output</div>
+      <pre id="summaryOutput" style="text-align: left;"></pre>
+    </div>
+  </div>
+
+  <script>
+    let traceData = [];
+    let summaryText = "";
+
+    function displayMessage(elementId, message, isError = false) {
+        const elem = document.getElementById(elementId);
+        elem.style.display = 'block';
+        elem.innerText = message;
+        elem.className = isError ? 'result-alert result-error' : 'result-alert result-success';
+    }
+
+    function loadSimulationResult() {
+        const rawOutput = localStorage.getItem('simulationResult');
+        const traceMessage = document.getElementById('traceMessage');
+        const summaryMessage = document.getElementById('summaryMessage');
+
+        if (!rawOutput) {
+            displayMessage('traceMessage', 'No simulation results found. Please run a simulation first.', true);
+            displayMessage('summaryMessage', 'No simulation results found. Please run a simulation first.', true);
+            return;
+        }
+
+        // Check for simulation error prefix
+        if (rawOutput.startsWith('Error:')) {
+            const errorDetails = rawOutput.substring(6).trim();
+            displayMessage('traceMessage', 'Simulation failed. Error details: ' + errorDetails, true);
+            displayMessage('summaryMessage', 'Simulation failed. Error details: ' + errorDetails, true);
+            return;
+        }
+
+        // --- Split Summary and Detailed Log ---
+        const logDelimiter = "---TRACE-LOG-START---";
+        const parts = rawOutput.split(logDelimiter);
+
+        if (parts.length < 2) {
+             // If delimiter is missing, assume the whole output is the summary/error
+            summaryText = rawOutput;
+            traceData = [];
+            displayMessage('traceMessage', 'Simulation complete, but no detailed trace log was generated.', false);
+        } else {
+            summaryText = parts[0].trim();
+            const traceLog = parts[1].trim();
+
+            // Clear previous data
+            traceData = [];
+
+            if (traceLog) {
+                const lines = traceLog.split('\n');
+                lines.forEach(line => {
+                    // C++ Format: time,operation,address,result,set_index
+                    const parts = line.split(',');
+                    if (parts.length === 5) {
+                        const [times, operation, address, result, index] = parts;
+                        traceData.push({
+                            times: times.trim(),
+                            action: operation.trim() + ' ' + address.trim(), // Combine operation and address
+                            result: result.trim(),
+                            index: index.trim()
+                        });
+                    }
+                });
+            }
+            displayMessage('traceMessage', `Simulation successfully completed with ${traceData.length} traces logged.`, false);
+        }
+
+        // Display Summary
+        document.getElementById('summaryOutput').innerText = summaryText;
+        displayMessage('summaryMessage', 'Summary statistics generated successfully.', false);
+
+        // Display the parsed log in the table
+        updateTraceTable();
+
+        // Show the detailed page first
+        goToPage1();
+    }
+
+    function updateTraceTable() {
+        const tableBody = document.getElementById("traceTable");
+        if (!tableBody) {
+            console.error("Trace table body not found (ID: traceTable)!");
+            return;
+        }
+        tableBody.innerHTML = ""; // Clear existing rows
+
+        traceData.forEach(row => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${row.times}</td>
+                    <td>${row.action}</td>
+                    <td style="color:${row.result === 'HIT' ? '#1dd1a1' : '#FC427B'}; font-weight:bold;">${row.result}</td>
+                    <td>${row.index}</td>
+                </tr>`;
+        });
+    }
+
+    function goToSummary() {
+        document.getElementById("page1").classList.remove("active");
+        document.getElementById("page2").classList.add("active");
+    }
+
+    function goToPage1() {
+        document.getElementById("page2").classList.remove("active");
+        document.getElementById("page1").classList.add("active");
+    }
+
+    function resetSimulation() {
+        localStorage.removeItem('simulationResult');
+        // Navigate back to the input page (assuming index5.html is the input page)
+        window.location.href = 'index5.html';
+    }
+
+  </script>
+</body>
+</html>

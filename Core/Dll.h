@@ -42,7 +42,7 @@ public:
     }
 
     ~dll(){
-            node<T>* itr = head;
+         node<T>* itr = head;
             while(itr){
                    node<T>* t = itr;
                     itr = itr -> next;

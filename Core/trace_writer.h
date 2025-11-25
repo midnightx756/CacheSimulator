@@ -22,7 +22,7 @@ public:
      * @throws std::runtime_error if the file cannot be opened.
      */
     TraceWriter(const std::string& filename) : filename(filename) {
-        output_file.open(filename, std::ios::out | std::ios::app);
+        output_file.open(filename,std::ios::app);
         if (!output_file.is_open()) {
             throw std::runtime_error("Failed to open trace file for writing: " + filename);
         }

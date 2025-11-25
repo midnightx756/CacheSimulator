@@ -30,8 +30,8 @@ class MinHeap{
     int heapifydown(int i) {
         int s = i; 
         while (true) {
-            int l = left(i);
-            int r = right(i);
+            size_t l = left(i);
+            size_t r = right(i);
             s = i;
             if (l < heap.size() && heap[l].frequency < heap[s].frequency) {
                 s = l;

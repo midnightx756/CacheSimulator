@@ -25,11 +25,12 @@ struct ll{
 public:
     ll(): head(nullptr){};
     ~ll(){
-        Node<T>* itr, *temp;
+        Node<T>* itr = head;
+        Node<T>* temp = nullptr;
         while(itr){
             temp = itr;
             itr = itr -> next;
-            delete  temp;
+            delete temp;
         }
         head = nullptr;
     }

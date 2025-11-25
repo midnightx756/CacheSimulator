@@ -24,7 +24,7 @@ public:
         cap = 20;
     }
     ~queue(){
-        Node<T>* itr = front, *tm;
+       Node<T>* itr = front, *tm;
         while(itr){
             tm = itr;
             itr = itr -> next;
